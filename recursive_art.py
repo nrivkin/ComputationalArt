@@ -1,14 +1,91 @@
 """
-Computational Art
-mini project #2
+Computational Art Redone
+mini project #5
 Noah Rivkin
 
-Creates image based on random functions
+Creates image based on random functions using object oriented code and lambda
+functions
 """
 
 import math
 import random
 from PIL import Image
+
+
+class RandomImage:
+    """
+    generates a random image
+    """
+    def __init__(self, filename, min_depth = 7, max_depth = 9, x_size = 100, y_size = 100):
+        """
+        Initilizes image
+        """
+        self.image = Image.new("RGB", (x_size, y_size))
+        self.depth = min_depth + random.randint(0, max_depth - min_depth) - 1
+        self.x_size = x_size
+        self.y_size = y_size
+        x_scale = 2/x_size
+        y_scale = 2/y_size
+        self.x = [(x + x_size) * x_scale - 1 for x in range(x_size)]
+        self.y = [(y + y_size) * y_scale - 1 for y in range(y_size)]
+
+    def randomize(self):
+        red_funcs = self.gen_rand_func()
+        green_funcs = self.gen_rand_func()
+        blue_funcs = self.gen_rand_func()
+        pixels = self.image.load()
+        for i in range(self.x_size):
+            temp_x = self.x[i]
+            for j in range(self.y_size):
+                pixels[i, j] = (
+                        self.col_map(red_funcs, temp_x, self.y[j]),
+                        self.col_map(green_funcs, temp_x, self.y[j]),
+                        self.col_map(blue_funcs, temp_x, self.y[j])
+                        )
+        self.image.save(filemane)
+
+    def gen_rand_func(self):
+        func_list = []
+        for i in range(self.depth):
+            func_list.append(random.randint(0,5))
+        func_list.append(random.randint(0,1))
+        return func_list
+
+    def eval_func(self, func_list, x, y, level):
+        """
+        Evaluate the random function f with inputs x,y
+        """
+        f = func_list[self.depth - level]
+        if f == 0:
+            return map(lambda x: x, x)
+        elif f == 1:
+            return map(lambda x: x, y)
+        elif f == 2:
+            return map(lambda x: self.eval_func(func_list, x, y, level + 1) * self.eval_func(func_list, x, y, level + 1), x)
+        elif f == 3:
+            return map(lambda x: .5 * (self.eval_func(func_list, x, y, level + 1) + self.eval_func(func_list, x, y, level + 1)), x)
+        elif f == 4:
+            return map(lambda x: math.cos(math.pi * self.eval_func(func_list, x, y, level + 1)), x)
+        elif f == 5:
+            return map(lambda x: math.sin(math.pi * self.eval_func(func_list, x, y, level + 1)), x)
+        elif f == 6:
+            return map(lambda x: -1 * self.eval_func(func_list, x, y, level + 1) ** 2, x)
+        elif f == 7:
+            return map(lambda x: ((self.eval_func(func_list, x, y, level + 1) ** 2) ** .5) ** .5, x)
+
+    def col_map(self, func, x, y):
+        """
+        maps function onto color values
+        """
+        print(map(self.eval_func(func, x, y, 0)), 1)
+        val += 1
+        val *= 128
+        return int(val)
+
+
+
+
+
 
 
 def build_random_function(min_depth, max_depth):
@@ -173,4 +250,6 @@ if __name__ == '__main__':
     # Create some computational art!
     # TODO: Un-comment the generate_art function call after you
     #       implement remap_interval and evaluate_random_function
-    generate_art("myart.png")
+    # generate_art("example3.png")
+    myimage = RandomImage('Object_oriented_example')
+    myimage.randomize()
