@@ -21,13 +21,14 @@ class RandomImage:
         Initilizes image
         """
         self.image = Image.new("RGB", (x_size, y_size))
+        self.filename = filename
         self.depth = min_depth + random.randint(0, max_depth - min_depth) - 1
         self.x_size = x_size
         self.y_size = y_size
         x_scale = 2/x_size
         y_scale = 2/y_size
-        self.x = [(x + x_size) * x_scale - 1 for x in range(x_size)]
-        self.y = [(y + y_size) * y_scale - 1 for y in range(y_size)]
+        self.x = [(x - x_size) * x_scale + 1 for x in range(x_size)]
+        self.y = [(y - y_size) * y_scale + 1 for y in range(y_size)]
 
     def randomize(self):
         red_funcs = self.gen_rand_func()
@@ -35,20 +36,20 @@ class RandomImage:
         blue_funcs = self.gen_rand_func()
         pixels = self.image.load()
         for i in range(self.x_size):
-            temp_x = self.x[i]
             for j in range(self.y_size):
                 pixels[i, j] = (
-                        self.col_map(red_funcs, temp_x, self.y[j]),
-                        self.col_map(green_funcs, temp_x, self.y[j]),
-                        self.col_map(blue_funcs, temp_x, self.y[j])
+                        self.col_map(red_funcs, self.x[i], self.y[j]),
+                        self.col_map(green_funcs, self.x[i], self.y[j]),
+                        self.col_map(blue_funcs, self.x[i], self.y[j])
                         )
-        self.image.save(filemane)
+        self.image.save(self.filename)
 
     def gen_rand_func(self):
         func_list = []
         for i in range(self.depth):
-            func_list.append(random.randint(0,5))
+            func_list.append(random.randint(2,7))
         func_list.append(random.randint(0,1))
+        print(func_list)
         return func_list
 
     def eval_func(self, func_list, x, y, level):
@@ -57,29 +58,30 @@ class RandomImage:
         """
         f = func_list[self.depth - level]
         if f == 0:
-            return map(lambda x: x, x)
+            return [x,x]
         elif f == 1:
-            return map(lambda x: x, y)
+            return [y,y]
         elif f == 2:
-            return map(lambda x: self.eval_func(func_list, x, y, level + 1) * self.eval_func(func_list, x, y, level + 1), x)
+            return list(foo[1] for foo in list(map(lambda x: x * y, self.eval_func(func_list, x, y, level + 1), self.eval_func(func_list, x, y, level + 1))))
         elif f == 3:
-            return map(lambda x: .5 * (self.eval_func(func_list, x, y, level + 1) + self.eval_func(func_list, x, y, level + 1)), x)
+            return list(foo[1] for foo in list(map(lambda x: .5 * (x + y), self.eval_func(func_list, x, y, level + 1), self.eval_func(func_list, x, y, level + 1))))
         elif f == 4:
-            return map(lambda x: math.cos(math.pi * self.eval_func(func_list, x, y, level + 1)), x)
+            return list(foo[1] for foo in list(map(lambda x: math.cos(math.pi * x), self.eval_func(func_list, x, y, level + 1))))
         elif f == 5:
-            return map(lambda x: math.sin(math.pi * self.eval_func(func_list, x, y, level + 1)), x)
+            return list(foo[1] for foo in list(map(lambda x: math.sin(math.pi * x), self.eval_func(func_list, x, y, level + 1))))
         elif f == 6:
-            return map(lambda x: -1 * self.eval_func(func_list, x, y, level + 1) ** 2, x)
+            return list(foo[1] for foo in list(map(lambda x: -1 * x ** 2, self.eval_func(func_list, x, y, level + 1))))
         elif f == 7:
-            return map(lambda x: ((self.eval_func(func_list, x, y, level + 1) ** 2) ** .5) ** .5, x)
+            return list(foo[1] for foo in list(map(lambda x: ((x ** 2) ** .5) ** .5, self.eval_func(func_list, x, y, level + 1))))
 
     def col_map(self, func, x, y):
         """
         maps function onto color values
         """
-        print(map(self.eval_func(func, x, y, 0)), 1)
-        val += 1
+        value = list(foo for foo in list(map(lambda x: self.eval_func(func, x, y, 0), [x])))
+        val = 1
         val *= 128
+        print(value)
         return int(val)
 
 
@@ -251,5 +253,5 @@ if __name__ == '__main__':
     # TODO: Un-comment the generate_art function call after you
     #       implement remap_interval and evaluate_random_function
     # generate_art("example3.png")
-    myimage = RandomImage('Object_oriented_example')
+    myimage = RandomImage('Object_oriented_example.png', 7, 9, 300, 300)
     myimage.randomize()
