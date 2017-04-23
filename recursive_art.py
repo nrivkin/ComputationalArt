@@ -29,7 +29,7 @@ class RandomImage:
         y_scale = 2/y_size
         self.x = [(x - x_size) * x_scale + 1 for x in range(x_size)]
         self.y = [(y - y_size) * y_scale + 1 for y in range(y_size)]
-        self.f_dict = {0: "x", 1: "y", 2: "prod", 3: "avg", 4: "cos_pi", 5: "sin_pi", 6: "negative", 7:"root_abs_val"}
+        self.f_dict = {2: "prod", 3: "avg", 4: "cos_pi", 5: "sin_pi", 6: "negative", 7:"root_abs_val"}
 
     def randomize(self):
         red_funcs = self.get_random_function()
@@ -37,11 +37,12 @@ class RandomImage:
         blue_funcs = self.get_random_function()
         pixels = self.image.load()
         for i in range(self.x_size):
+            temp_x = self.x[i]
             for j in range(self.y_size):
                 pixels[i, j] = (
-                        self.col_map(self.eval_function(red_funcs, self.x[i], self.y[j])),
-                        self.col_map(self.eval_function(green_funcs, self.x[i], self.y[j])),
-                        self.col_map(self.eval_function(blue_funcs, self.x[i], self.y[j]))
+                        self.col_map(self.eval_function(red_funcs, temp_x, self.y[j])),
+                        self.col_map(self.eval_function(green_funcs, temp_x, self.y[j])),
+                        self.col_map(self.eval_function(blue_funcs, temp_x, self.y[j]))
                         )
         self.image.save(self.filename)
 
@@ -52,7 +53,7 @@ class RandomImage:
         end_f = {0: "x", 1: "y"}
         '''
         if self.depth < depth:
-            return self.f_dict[random.randint(0, 1)]
+            return [random.randint(0, 1)]
         else:
             f_num = random.randint(2,7)
             if f_num < 4:
@@ -61,9 +62,9 @@ class RandomImage:
                 return [self.f_dict[f_num],self.get_random_function(depth + 1)]
 
     def eval_function(self,f,x,y):
-        if f[0] == "x":
+        if f[0] == 0:
             return x
-        elif f[0] == "y":
+        elif f[0] == 1:
             return y
         elif f[0] == "prod":
             return self.eval_function(f[1], x, y) * self.eval_function(f[2], x, y)
